@@ -7,7 +7,7 @@
 #define MENU_VARIABLE 2
 
 struct menu_s {
-    char type;
+    int type;
     int size;
 };
 
@@ -18,7 +18,7 @@ typedef struct {
 } Item;
 
 typedef struct {
-    char type;
+    int type;
     int size;
 
     int max;
@@ -31,7 +31,7 @@ typedef struct Node {
 } Node;
 
 typedef struct {
-    char type;
+    int type;
     int size;
 
     Node *list;
@@ -127,8 +127,11 @@ void menu_displayMenu(Menu *menu, void *param) {
     if (menu == NULL) {
         return;
     }
+    if (menu->size == 0) { //theres no menu here
+        return;
+    }
     int choice;
-    int cont;
+    int cont = 0;
     do {
         if (menu->type == MENU_FIXED) {
             m_printMenuFixed((MenuFixed *)menu);
@@ -137,7 +140,7 @@ void menu_displayMenu(Menu *menu, void *param) {
         }
         printf("Enter your selection: ");
         scanf("%d", &choice);
-        if (choice < 0 || choice > menu->size) {
+        if (choice < 1 || choice > menu->size) {
             printf("Invalid Choice\n");
             continue;
         }
@@ -205,7 +208,41 @@ int m_registerOptionVariable(MenuVariable *menu, const char *name, void (*func)(
     return 1;
 }
 
-//TODO print & choose funcs
+
+void m_printMenuFixed(MenuFixed *menu) {
+    for (int i = 0; i < menu->size; i++) {
+        printf("%d: %s\n", i+1, menu->array[i].name);
+    }
+}
+
+void m_printMenuVariable(MenuVariable *menu) {
+    Node *cur = menu->list;
+    int i = 1;
+    while (cur != NULL) {
+        printf("%d: %s\n", i, cur->item.name);
+        i++;
+        cur = cur->next;
+    }
+}
+
+//return 0 if its an exit function
+int m_chooseMenuFixed(MenuFixed *menu, int choice, void *param) {
+    int i = choice - 1; //choice is in the interval [1,size] not [0,size)
+    menu->array[i].func(choice, param);
+    return menu->array[i].willCont;
+}
+
+int m_chooseMenuVariable(MenuVariable *menu, int choice, void *param) {
+    Node *cur = menu->list;
+    int i = 1;
+    while (i < choice) {
+        i++;
+        cur = cur->next;
+    }
+    cur->item.func(choice, param);
+    return cur->item.willCont;
+}
+
 
 void m_clearMenuFixed(MenuFixed *menu) {
     menu->size = 0;
@@ -221,6 +258,7 @@ void m_clearMenuVariable(MenuVariable *menu) {
     menu->last = NULL;
     menu->size = 0;
 }
+
 
 void m_destroyFixed(MenuFixed *menu) {
     free(menu->array);
