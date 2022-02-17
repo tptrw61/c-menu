@@ -193,6 +193,7 @@ int m_registerOptionVariable(MenuVariable *menu, const char *name, void (*func)(
         menu->last->next = newNode;
         menu->last = newNode;
     }
+    (menu->size)++;
     return 1;
 }
 
