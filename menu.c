@@ -54,6 +54,14 @@ static void m_clearMenuVariable(MenuVariable *menu);
 static void m_destroyFixed(MenuFixed *menu);
 static void m_destroyVariable(MenuVariable *menu);
 
+Menu *menu_create(int size) {
+    if (size >= 1) {
+        return menu_createFixed(size);
+    } else {
+        return menu_createVariable();
+    }
+}
+
 Menu *menu_createVariable(void) {
     MenuVariable *menu = (MenuVariable *)malloc(sizeof(MenuVariable));
     if (menu == NULL) {
