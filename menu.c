@@ -7,10 +7,8 @@
 #define MENU_FIXED 1
 #define MENU_VARIABLE 2
 
-struct menu_s {
-    int type;
-    int size;
-};
+typedef Menu MenuFixed;
+typedef Menu MenuVariable;
 
 typedef struct {
     char name[MENU_OPTION_NAME_SIZE];
@@ -18,26 +16,20 @@ typedef struct {
     int willCont;
 } Item;
 
-typedef struct {
-    int type;
-    int size;
-
-    int max;
-    Item *array;
-} MenuFixed;
-
 typedef struct Node {
     Item item;
     struct Node *next;
 } Node;
 
-typedef struct {
+struct GenericMenu_s {
     int type;
     int size;
 
+    int max;
+    Item *array;
     Node *list;
     Node *last;
-} MenuVariable;
+};
 
 static int m_registerOptionFixed(MenuFixed *menu, const char *name, void (*func)(int, void *), int willCont);
 static int m_registerOptionVariable(MenuVariable *menu, const char *name, void (*func)(int, void *), int willCont);

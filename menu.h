@@ -3,7 +3,7 @@
 
 #define MENU_OPTION_NAME_SIZE 32
 
-typedef struct menu_s Menu;
+typedef struct GenericMenu_s Menu;
 
 //if size is 0 or negative, it will create a variable sized menu
 //otherwise it will create a fixed sized menu
