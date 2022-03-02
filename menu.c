@@ -55,7 +55,7 @@ static void m_clearMenuVariable(MenuVariable *menu);
 static void m_destroyFixed(MenuFixed *menu);
 static void m_destroyVariable(MenuVariable *menu);
 
-static int mh_strIsInt(const char *s);
+static int mh_strIsNum(const char *s);
 
 Menu *menu_create(int size) {
     if (size >= 1) {
@@ -141,10 +141,10 @@ void menu_displayMenu(Menu *menu, void *param) {
         } else if (menu->type == MENU_VARIABLE) {
             m_printMenuVariable((MenuVariable *) menu);
         }
-        printf("Enter your selection: ");
-        scanf("%d", &choice);
+        printf_s("Enter your selection: ");
+        scanf_s("%d", &choice);
         if (choice < 1 || choice > menu->size) {
-            printf("Invalid Choice\n");
+            printf_s("Invalid Choice\n");
             continue;
         }
         if (menu->type == MENU_FIXED) {
@@ -214,7 +214,7 @@ int m_registerOptionVariable(MenuVariable *menu, const char *name, void (*func)(
 
 void m_printMenuFixed(MenuFixed *menu) {
     for (int i = 0; i < menu->size; i++) {
-        printf("%d: %s\n", i+1, menu->array[i].name);
+        printf_s("%d: %s\n", i+1, menu->array[i].name);
     }
 }
 
@@ -222,7 +222,7 @@ void m_printMenuVariable(MenuVariable *menu) {
     Node *cur = menu->list;
     int i = 1;
     while (cur != NULL) {
-        printf("%d: %s\n", i, cur->item.name);
+        printf_s("%d: %s\n", i, cur->item.name);
         i++;
         cur = cur->next;
     }
@@ -279,15 +279,43 @@ void m_destroyVariable(MenuVariable *menu) {
 void menuh_getInt(const char *question, int *ptr) {
     //use getline, then check if string is a number, save number and return OR
     //repeat as necessary
+    if (ptr == NULL) return;
+    char *s = NULL;
+    size_t n = 0;
+    while (1) {
+        if (question != NULL) {
+            printf_s("%s", question);
+        }
+        getline(&s, &n, stdin);
+        if (mh_strIsNum(s)) {
+            sscanf_s(s, "%d", ptr);
+            break;
+        }
+    }
+    free(s);
 }
 
-int menuh_getInt(const char *question, int *ptr, int defaultValue) {
+int menuh_getIntDefault(const char *question, int *ptr, int defaultValue) {
     //does the same thing as getInt but only asks once and returns 
     //a default value otherwise
+    *ptr = defaultValue;
+    return 0;
 }
 
 
-int mh_strIsInt(const char *s) {
+int mh_strIsNum(const char *s) {
+    if (s == NULL) return 0;
     //get to first non-whitespace character
-
+    while (isspace(*s)) {
+        s++;
+    }
+    if (*s == '\0') return 0; // if we hit the end theres no number
+    while (isdigit(*s)) {
+        s++;
+    }
+    if (*s == '\0') return 1; //hit the end the str after a number
+    while (isspace(*s)) {
+        s++;
+    }
+    return *s == '\0'; //if its not the end of the str, its something else and therefore not a number string
 }

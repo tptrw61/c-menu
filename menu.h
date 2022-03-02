@@ -28,6 +28,6 @@ void menu_destroy(Menu *menu);
 
 void menuh_getInt(const char *question, int *ptr);
 
-int menuh_getIntDefault(const char *question, int *ptr, int defaultValue);
+//int menuh_getIntDefault(const char *question, int *ptr, int defaultValue);
 
 #endif
