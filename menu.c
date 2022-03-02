@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 
 #define MENU_FIXED 1
 #define MENU_VARIABLE 2
@@ -53,6 +54,8 @@ static void m_clearMenuVariable(MenuVariable *menu);
 
 static void m_destroyFixed(MenuFixed *menu);
 static void m_destroyVariable(MenuVariable *menu);
+
+static int mh_strIsInt(const char *s);
 
 Menu *menu_create(int size) {
     if (size >= 1) {
@@ -268,4 +271,23 @@ void m_destroyFixed(MenuFixed *menu) {
 void m_destroyVariable(MenuVariable *menu) {
     m_clearMenuVariable(menu);
     free(menu);
+}
+
+
+
+//TODO finish these
+void menuh_getInt(const char *question, int *ptr) {
+    //use getline, then check if string is a number, save number and return OR
+    //repeat as necessary
+}
+
+int menuh_getInt(const char *question, int *ptr, int defaultValue) {
+    //does the same thing as getInt but only asks once and returns 
+    //a default value otherwise
+}
+
+
+int mh_strIsInt(const char *s) {
+    //get to first non-whitespace character
+
 }

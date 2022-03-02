@@ -24,4 +24,10 @@ void menu_clearMenu(Menu *menu);
 
 void menu_destroy(Menu *menu);
 
+//some helper stuff
+
+void menuh_getInt(const char *question, int *ptr);
+
+int menuh_getIntDefault(const char *question, int *ptr, int defaultValue);
+
 #endif
