@@ -7,6 +7,12 @@
 #define MENU_FIXED 1
 #define MENU_VARIABLE 2
 
+#if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
+#define printf printf_s
+#define scanf scanf_s
+#define sscanf sscanf_s
+#endif
+
 typedef Menu MenuFixed;
 typedef Menu MenuVariable;
 
@@ -133,10 +139,9 @@ void menu_displayMenu(Menu *menu, void *param) {
         } else if (menu->type == MENU_VARIABLE) {
             m_printMenuVariable((MenuVariable *) menu);
         }
-        printf_s("Enter your selection: ");
-        scanf_s("%d", &choice);
+        menuh_getInt("Enter your selection: ", &choice);
         if (choice < 1 || choice > menu->size) {
-            printf_s("Invalid Choice\n");
+            printf("Invalid Choice\n\n");
             continue;
         }
         if (menu->type == MENU_FIXED) {
@@ -169,6 +174,7 @@ void menu_destroy(Menu *menu) {
     }
 }
 
+void menu_dummy(int _1, void *_2) {}
 
 
 int m_registerOptionFixed(MenuFixed *menu, const char *name, void (*func)(int, void *), int willCont) {
@@ -206,7 +212,7 @@ int m_registerOptionVariable(MenuVariable *menu, const char *name, void (*func)(
 
 void m_printMenuFixed(MenuFixed *menu) {
     for (int i = 0; i < menu->size; i++) {
-        printf_s("%d: %s\n", i+1, menu->array[i].name);
+        printf("%d: %s\n", i+1, menu->array[i].name);
     }
 }
 
@@ -214,7 +220,7 @@ void m_printMenuVariable(MenuVariable *menu) {
     Node *cur = menu->list;
     int i = 1;
     while (cur != NULL) {
-        printf_s("%d: %s\n", i, cur->item.name);
+        printf("%d: %s\n", i, cur->item.name);
         i++;
         cur = cur->next;
     }
@@ -276,11 +282,11 @@ void menuh_getInt(const char *question, int *ptr) {
     size_t n = 0;
     while (1) {
         if (question != NULL) {
-            printf_s("%s", question);
+            printf("%s", question);
         }
         getline(&s, &n, stdin);
         if (mh_strIsNum(s)) {
-            sscanf_s(s, "%d", ptr);
+            sscanf(s, "%d", ptr);
             break;
         }
     }
