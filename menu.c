@@ -144,7 +144,7 @@ void menu_displayMenu(Menu *menu, void *param) {
         printf("Enter your selection: ");
         scanf("%d", &choice);
         if (choice < 1 || choice > menu->size) {
-            printf("Invalid Choice\n");
+            printf("Invalid Choice\n\n");
             continue;
         }
         if (menu->type == MENU_FIXED) {
@@ -281,7 +281,7 @@ void menuh_getInt(const char *question, int *ptr) {
     //repeat as necessary
 }
 
-int menuh_getInt(const char *question, int *ptr, int defaultValue) {
+int menuh_getIntDefault(const char *question, int *ptr, int defaultValue) {
     //does the same thing as getInt but only asks once and returns 
     //a default value otherwise
 }
