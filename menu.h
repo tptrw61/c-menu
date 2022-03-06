@@ -19,6 +19,7 @@ int menu_registerOption(Menu_s *menu, const char *optionName, void (*optionFunc)
 int menu_registerExitOption(Menu_s *menu, const char *optionName, void (*optionFunc)(int, void *));
 
 //edit menu option functions will go here
+int menu_editOptionName(Menu_s *menu, int optionNum, const char *newName);
 
 void menu_displayMenu(Menu_s *menu, void *param);
 

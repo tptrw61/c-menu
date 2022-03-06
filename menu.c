@@ -48,6 +48,9 @@ struct GenericMenu_s {
 static int m_registerOptionFixed(MenuFixed *menu, const char *name, void (*func)(int, void *), int willCont);
 static int m_registerOptionVariable(MenuVariable *menu, const char *name, void (*func)(int, void *), int willCont);
 
+static int m_editOptionNameFixed(MenuFixed *menu, int optionNum, const char *newName);
+static int m_editOptionNameVariable(MenuVariable *menu, int optionNum, const char *newName);
+
 static void m_printMenuFixed(MenuFixed *menu);
 static void m_printMenuVariable(MenuVariable *menu);
 
@@ -134,6 +137,25 @@ int menu_registerExitOption(Menu_s *menu, const char *optionName, void (*optionF
     return 0;
 }
 
+int menu_editOptionName(Menu_s *menu, int optionNum, const char *newName) {
+    char name[MENU_OPTION_NAME_SIZE];
+    strncpy(name, newName, MENU_OPTION_NAME_SIZE-1);
+    name[MENU_OPTION_NAME_SIZE-1] = '\0';
+    if (menu == NULL || newName == NULL) {
+        return 0;
+    }
+    if (optionNum < 1 || optionNum > menu->size) {
+        return 0;
+    }
+    if (menu->type == MENU_FIXED) {
+        return m_editOptionNameFixed((MenuFixed *)menu, optionNum, name);
+    }
+    if (menu->type == MENU_VARIABLE) {
+        return m_editOptionNameVariable((MenuVariable *)menu, optionNum, name);
+    }
+    return 0;
+}
+
 void menu_displayMenu(Menu_s *menu, void *param) {
     if (menu == NULL) {
         return;
@@ -194,8 +216,8 @@ int m_registerOptionFixed(MenuFixed *menu, const char *name, void (*func)(int, v
     menu->array[menu->size].name[MENU_OPTION_NAME_SIZE] = '\0';
     menu->array[menu->size].func = func;
     menu->array[menu->size].willCont = willCont;
-    (menu->size)++;
-    return 1;
+    return (menu->size)++; //returns the option number
+    //return 1;
 }
 
 int m_registerOptionVariable(MenuVariable *menu, const char *name, void (*func)(int, void *), int willCont) {
@@ -214,7 +236,27 @@ int m_registerOptionVariable(MenuVariable *menu, const char *name, void (*func)(
         menu->last->next = newNode;
         menu->last = newNode;
     }
-    (menu->size)++;
+    return (menu->size)++; //returns the option number
+    //return 1;
+}
+
+
+int m_editOptionNameFixed(MenuFixed *menu, int optionNum, const char *newName) {
+    strncpy(menu->array[optionNum-1].name, newName, MENU_OPTION_NAME_SIZE);
+    return 1;
+}
+
+int m_editOptionNameVariable(MenuVariable *menu, int optionNum, const char *newName) {
+    int i = 1;
+    Node *cur = menu->list;
+    while (i < optionNum && cur != NULL) {
+        cur = cur->next;
+        i++;
+    }
+    if (cur == NULL) {
+        return 0;
+    }
+    strncpy(cur->item.name, newName, MENU_OPTION_NAME_SIZE);
     return 1;
 }
 
@@ -282,7 +324,6 @@ void m_destroyVariable(MenuVariable *menu) {
 
 
 
-//TODO finish these
 void menuh_getInt(const char *question, int *ptr) {
     //use getline, then check if string is a number, save number and return OR
     //repeat as necessary
