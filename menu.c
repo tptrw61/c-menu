@@ -4,11 +4,19 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <errno.h>
 
 #define MENU_FIXED 1
 #define MENU_VARIABLE 2
 
+#define DEFAULT_BUFFER_SIZE 80
+
+#define USE_MY_GETLINE
+
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
+#ifndef USE_MY_GETLINE
+#define USE_MY_GETLINE
+#endif//USE_MY_GETLINE
 #define USING_WINDOWS
 #define sscanf sscanf_s
 #endif
@@ -55,7 +63,7 @@ static void m_destroyVariable(MenuVariable *menu);
 
 static int mh_strIsNum(const char *s);
 static int64_t mh_getLine(char **buf, size_t *n, FILE *stream);
-static int64_t mh_manualGetLine(char **buf, size_t *n, FILE *stream);
+int64_t mh_manualGetLine(char **buf, size_t *n, FILE *stream);
 
 Menu_s *menu_create(int size) {
     if (size >= 1) {
@@ -322,14 +330,55 @@ int mh_strIsNum(const char *s) {
 }
 
 int64_t mh_getLine(char **buf, size_t *n, FILE *stream) {
-#ifndef USING_WINDOWS
-    return getline(buf, n, stream);
-#else
+#if defined(USING_WINDOWS) || defined(USE_MY_GETLINE)
     return mh_manualGetLine(buf, n, stream);
+#else
+    return getline(buf, n, stream);
 #endif
 }
 
-
+//errors EINVAL, ENOMEM
 int64_t mh_manualGetLine(char **buf, size_t *n, FILE *stream) {
-    return -1;
+    if (buf == NULL || n == NULL || stream == NULL) { //set errno do to bad param
+        errno = ENOMEM;
+        return -1;
+    }
+    if (*buf != NULL && *n == 0) {
+        errno = ENOMEM;
+        return -1;
+    }
+    //check if buffer is null
+    if (*buf == NULL) {
+        *buf = malloc(DEFAULT_BUFFER_SIZE);
+        if (*buf == NULL) {
+            errno = ENOMEM;
+            return -1;
+        }
+        *n = DEFAULT_BUFFER_SIZE;
+    }
+    size_t i = 0;
+    int read;
+    while (1) {
+        //check if resize is required
+        //doing this first cause ill likely have to put a '\0' at index i
+        if (i == *n) {
+            char *newbuf = realloc(*buf, *n + DEFAULT_BUFFER_SIZE);
+            if (newbuf == NULL) {
+                //should i move all read characters back to the stream using ungetc?
+                errno = ENOMEM;
+                return -1;
+            }
+            *n += DEFAULT_BUFFER_SIZE;
+            *buf = newbuf;
+        }
+        read = fgetc(stream);
+        if (read == EOF || read == '\n' || read == '\0') {
+            break;
+        } else {
+            (*buf)[i] = (char)read;
+            i++;
+        }
+    }
+    (*buf)[i] = '\0';
+    return i;
 }

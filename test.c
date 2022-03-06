@@ -2,6 +2,13 @@
 #include <stdlib.h>
 #include "menu.h"
 
+//#define TEST_MY_GETLINE
+
+#ifdef TEST_MY_GETLINE
+#include <stdint.h>
+extern int64_t mh_manualGetLine(char **buf, size_t *n, FILE *stream);
+#endif //TEST_MY_GETLINE
+
 int size;
 
 void optionFunc(int opNum, void *params) {
@@ -17,6 +24,16 @@ void optionFunc(int opNum, void *params) {
 }
 
 int main(void) {
+
+#ifdef TEST_MY_GETLINE
+    char *buf = NULL;
+    size_t n;
+    mh_manualGetLine(&buf, &n, stdin);
+    printf("%s\n", buf);
+    return 0;
+#endif //TEST_MY_GETLINE
+
+
     Menu_s *menu = menu_create(0);
     if (menu == NULL) {
         fprintf(stderr, "That sucks\n");
