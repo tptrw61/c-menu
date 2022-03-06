@@ -62,7 +62,7 @@ static void m_destroyFixed(MenuFixed *menu);
 static void m_destroyVariable(MenuVariable *menu);
 
 static int mh_strIsNum(const char *s);
-static int64_t mh_getLine(char **buf, size_t *n, FILE *stream);
+int64_t mh_getLine(char **buf, size_t *n, FILE *stream);
 int64_t mh_manualGetLine(char **buf, size_t *n, FILE *stream);
 
 Menu_s *menu_create(int size) {
