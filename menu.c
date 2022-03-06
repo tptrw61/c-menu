@@ -11,7 +11,7 @@
 
 #define DEFAULT_BUFFER_SIZE 80
 
-#define USE_MY_GETLINE
+//#define USE_MY_GETLINE
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
 #ifndef USE_MY_GETLINE
