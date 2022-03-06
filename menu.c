@@ -330,7 +330,7 @@ int mh_strIsNum(const char *s) {
 }
 
 int64_t mh_getLine(char **buf, size_t *n, FILE *stream) {
-#if defined(USING_WINDOWS) || defined(USE_MY_GETLINE)
+#ifdef USE_MY_GETLINE
     return mh_manualGetLine(buf, n, stream);
 #else
     return getline(buf, n, stream);
