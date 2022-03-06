@@ -8,13 +8,12 @@
 #define MENU_VARIABLE 2
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
-#define printf printf_s
-#define scanf scanf_s
+#define USING_WINDOWS
 #define sscanf sscanf_s
 #endif
 
-typedef Menu MenuFixed;
-typedef Menu MenuVariable;
+typedef Menu_s MenuFixed;
+typedef Menu_s MenuVariable;
 
 typedef struct {
     char name[MENU_OPTION_NAME_SIZE];
@@ -54,8 +53,9 @@ static void m_destroyFixed(MenuFixed *menu);
 static void m_destroyVariable(MenuVariable *menu);
 
 static int mh_strIsNum(const char *s);
+static void mh_getLine(char **buf, size_t *n, FILE *stream);
 
-Menu *menu_create(int size) {
+Menu_s *menu_create(int size) {
     if (size >= 1) {
         return menu_createFixed(size);
     } else {
@@ -63,7 +63,7 @@ Menu *menu_create(int size) {
     }
 }
 
-Menu *menu_createVariable(void) {
+Menu_s *menu_createVariable(void) {
     MenuVariable *menu = (MenuVariable *)malloc(sizeof(MenuVariable));
     if (menu == NULL) {
         return NULL;
@@ -71,9 +71,9 @@ Menu *menu_createVariable(void) {
     menu->last = menu->list = NULL;
     menu->size = 0;
     menu->type = MENU_VARIABLE;
-    return (Menu *)menu;
+    return (Menu_s *)menu;
 }
-Menu *menu_createFixed(int size) {
+Menu_s *menu_createFixed(int size) {
     if (size <= 0) {
         return NULL;
     }
@@ -89,10 +89,10 @@ Menu *menu_createFixed(int size) {
     menu->max = size;
     menu->size = 0;
     menu->type = MENU_FIXED;
-    return (Menu *)menu;
+    return (Menu_s *)menu;
 }
 
-int menu_registerOption(Menu *menu, const char *optionName, void (*optionFunc)(int, void *)) {
+int menu_registerOption(Menu_s *menu, const char *optionName, void (*optionFunc)(int, void *)) {
     if (menu == NULL || optionName == NULL || optionFunc == NULL) {
         return 0;
     }
@@ -108,7 +108,7 @@ int menu_registerOption(Menu *menu, const char *optionName, void (*optionFunc)(i
     return 0;
 }
 
-int menu_registerExitOption(Menu *menu, const char *optionName, void (*optionFunc)(int, void *)) {
+int menu_registerExitOption(Menu_s *menu, const char *optionName, void (*optionFunc)(int, void *)) {
     if (menu == NULL || optionName == NULL || optionFunc == NULL) {
         return 0;
     }
@@ -124,7 +124,7 @@ int menu_registerExitOption(Menu *menu, const char *optionName, void (*optionFun
     return 0;
 }
 
-void menu_displayMenu(Menu *menu, void *param) {
+void menu_displayMenu(Menu_s *menu, void *param) {
     if (menu == NULL) {
         return;
     }
@@ -139,11 +139,7 @@ void menu_displayMenu(Menu *menu, void *param) {
         } else if (menu->type == MENU_VARIABLE) {
             m_printMenuVariable((MenuVariable *) menu);
         }
-        menuh_getInt("Enter your selection: ", &choice);
-        if (choice < 1 || choice > menu->size) {
-            printf("Invalid Choice\n\n");
-            continue;
-        }
+        menuh_getIntRange("Enter your selection: ", &choice, 1, menu->size);
         if (menu->type == MENU_FIXED) {
             cont = m_chooseMenuFixed((MenuFixed *)menu, choice, param);
         } else if (menu->type == MENU_VARIABLE) {
@@ -152,7 +148,7 @@ void menu_displayMenu(Menu *menu, void *param) {
     } while (cont);
 }
 
-void menu_clearMenu(Menu *menu) {
+void menu_clearMenu(Menu_s *menu) {
     if (menu == NULL) {
         return;
     }
@@ -163,7 +159,7 @@ void menu_clearMenu(Menu *menu) {
     }
 }
 
-void menu_destroy(Menu *menu) {
+void menu_destroy(Menu_s *menu) {
     if (menu == NULL) {
         return;
     }
@@ -176,6 +172,9 @@ void menu_destroy(Menu *menu) {
 
 void menu_dummy(int _1, void *_2) {}
 
+int menu_size(Menu_s *menu) {
+    return menu == NULL ? 0 : menu->size;
+}
 
 int m_registerOptionFixed(MenuFixed *menu, const char *name, void (*func)(int, void *), int willCont) {
     if (menu->size == menu->max) {
@@ -284,7 +283,7 @@ void menuh_getInt(const char *question, int *ptr) {
         if (question != NULL) {
             printf("%s", question);
         }
-        getline(&s, &n, stdin);
+        mh_getLine(&s, &n, stdin);
         if (mh_strIsNum(s)) {
             sscanf(s, "%d", ptr);
             break;
@@ -293,13 +292,12 @@ void menuh_getInt(const char *question, int *ptr) {
     free(s);
 }
 
-int menuh_getIntDefault(const char *question, int *ptr, int defaultValue) {
-    //does the same thing as getInt but only asks once and returns 
-    //a default value otherwise
-    *ptr = defaultValue;
-    return 0;
+void menuh_getIntRange(const char *question, int *ptr, int min, int max) {
+    menuh_getInt(question, ptr);
+    while (*ptr < min || *ptr > max) {
+        menuh_getInt(question, ptr);
+    }
 }
-
 
 int mh_strIsNum(const char *s) {
     if (s == NULL) return 0;
@@ -308,6 +306,9 @@ int mh_strIsNum(const char *s) {
         s++;
     }
     if (*s == '\0') return 0; // if we hit the end theres no number
+    if (isdigit(*s) || *s == '-') { //in case its negative
+        s++;
+    }
     while (isdigit(*s)) {
         s++;
     }
@@ -317,3 +318,13 @@ int mh_strIsNum(const char *s) {
     }
     return *s == '\0'; //if its not the end of the str, its something else and therefore not a number string
 }
+
+void mh_getLine(char **buf, size_t *n, FILE *stream) {
+#ifndef USING_WINDOWS
+    getline(buf, n, stream);
+#else
+    //figure something out for windows
+#endif
+}
+
+
