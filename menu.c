@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <stdint.h>
 
 #define MENU_FIXED 1
 #define MENU_VARIABLE 2
@@ -53,7 +54,8 @@ static void m_destroyFixed(MenuFixed *menu);
 static void m_destroyVariable(MenuVariable *menu);
 
 static int mh_strIsNum(const char *s);
-static void mh_getLine(char **buf, size_t *n, FILE *stream);
+static int64_t mh_getLine(char **buf, size_t *n, FILE *stream);
+static int64_t mh_manualGetLine(char **buf, size_t *n, FILE *stream);
 
 Menu_s *menu_create(int size) {
     if (size >= 1) {
@@ -319,12 +321,15 @@ int mh_strIsNum(const char *s) {
     return *s == '\0'; //if its not the end of the str, its something else and therefore not a number string
 }
 
-void mh_getLine(char **buf, size_t *n, FILE *stream) {
+int64_t mh_getLine(char **buf, size_t *n, FILE *stream) {
 #ifndef USING_WINDOWS
-    getline(buf, n, stream);
+    return getline(buf, n, stream);
 #else
-    //figure something out for windows
+    return mh_manualGetLine(buf, n, stream);
 #endif
 }
 
 
+int64_t mh_manualGetLine(char **buf, size_t *n, FILE *stream) {
+    return -1;
+}
