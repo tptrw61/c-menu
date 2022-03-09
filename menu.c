@@ -14,12 +14,16 @@
 //#define USE_MY_GETLINE
 
 #if defined(_WIN32) || defined(_WIN64) || defined(__CYGWIN__)
+#define USING_WINDOWS
+#endif
+
+#ifdef USING_WINDOWS
+#define sscanf sscanf_s
 #ifndef USE_MY_GETLINE
 #define USE_MY_GETLINE
 #endif//USE_MY_GETLINE
-#define USING_WINDOWS
-#define sscanf sscanf_s
-#endif
+#endif//USING_WINDOWS
+
 
 typedef Menu_s MenuFixed;
 typedef Menu_s MenuVariable;
